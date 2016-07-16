@@ -14,18 +14,7 @@ destination = os.path.expanduser('F:\\moved')
 ignore = frozenset([ 'Cover.jpg', 'AlbumArtSmall.jpg', 'Folder.jpg',
                 'Thumbs.db',
                 'desktop.ini',
-                'REAM ME FIRST.txt', 'READ ME FIRST.txt', 'ReadMe.txt', 'readme.txt',
-                '.BridgeSort', '.BridgeLabelsAndRatings',
-                'Torrent Downloaded From ExtraTorrent.cc.txt',
-                'Torrent-Downloaded-From-extratorrent.cc.txt',
-                'WWW.YIFY-TORRENTS.COM.jpg',
-                'Torrent downloaded from AhaShare.com.txt',
-                'Torrent downloaded from demonoid.pw.txt',
-                'RARBG.com.txt',
-                'Torrent Downloaded From ExtraTorrent.com.txt',
-                'Outlander poster.jpg',
-                'P90X+ Calandar.pdf',
-                'upload Pawulon.txt'])
+                'READ ME FIRST.txt', 'ReadMe.txt', 'readme.txt'])
 
 first_instance = set()
 file_list = []
