@@ -1,8 +1,19 @@
 import os
 import sys
 import shutil
+import argparse
 
 from os.path import join, dirname, basename, getsize
+
+http://stackoverflow.com/questions/7427101/dead-simple-argparse-example-wanted-1-argument-3-results
+parser = argparse.ArgumentParser(description = "A tool for manipulating duplicate files.")
+
+parser.add_argument('<path>', help = 'The path to search for duplicates. Will search sub-directories as well.', 
+                    required = True)
+parser.add_argument('-a' '--action', 
+                    help = 'This option is for an action to take on a the duplicate files. You can list, move, or delete duplicates. ', 
+                    choices = [('-l', '--list'), ('-m', '--move'), ('-d', '--delete')], 
+                    required = True, default = '-l')
 
 # Boiler plate maybe?
 drive = sys.argv[1]
