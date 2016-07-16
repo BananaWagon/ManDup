@@ -2,13 +2,13 @@ import os
 import sys
 import shutil
 
-from os.path import join, dirname, basename, getsize
+from os.path import join
 
 # Boiler plate maybe?
 drive = sys.argv[1]
 option = sys.argv[2]
 
-
+destination = os.path.expanduser('F:\\moved')
 
 # TODO: Make a better way to implement an ignore list. 
 ignore = frozenset([ 'Cover.jpg', 'AlbumArtSmall.jpg', 'Folder.jpg',
@@ -24,34 +24,15 @@ dir_duplist = []
 total_size = 0
 not_moved = 0
 
-class DuplicateFinder(object):
-    """Finds duplicate files in a folder or folders."""
-    
-    def __init__(self, drive, option, destination = os.path.expanduser('F:\\moved')):
-        self.drive = drive
-        self.destination = destination
-        self.option = option
-        self.file_index = []
-        self.file_dup_index = []
-        self.dir_dup_index =[]
-        self.moved = 0
-        self.not_moved = 0
-        self.total_size_index = 0
-        self.total_size_moved = 0
-        self.total_size_moved = 0
-        self.total_size_deleted= 0
+for (dirname, dirs, files) in os.walk(drive):
+    for filename in files:
+        the_file = os.path.join(dirname, filename)
         
-   def locate_files(self):     
-        for (dirname, dirs, files) in os.walk(drive):
-            for filename in files:
-                # Ignore files in this set
-                if filename not in ignore:
-                    # From what I can tell yield gives next in list without
-                    # using a lot of memory.
-                    yield join(dirname, filename)
+        # TODO: Move all this crap to funtions
+        # Ignore files in this set
+        if filename in ignore:
+            continue
         
-        
-""" Continue refactor here. """
         # List/Move/Delete file if file is a duplicate
         elif str(filename) in first_instance:
             if not filename in file_duplist:                    
