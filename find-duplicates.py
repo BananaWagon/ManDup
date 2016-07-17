@@ -22,6 +22,7 @@ ignore = frozenset([ 'Cover.jpg', 'AlbumArtSmall.jpg', 'Folder.jpg',
                 'REAM ME FIRST.txt', 'READ ME FIRST.txt', 'ReadMe.txt', 'readme.txt',
                 '.BridgeSort', '.BridgeLabelsAndRatings'])
 
+
 class DuplicateFinder(object):
     """Finds duplicate files in a folder or folders."""
     
@@ -147,10 +148,8 @@ class DuplicateFinder(object):
             {self.deleted} duplicate files deleted from:\t{self.path}""".format(self=self)
             
         return stats
-        
     
-#out_path = os.path.join(dirname(os.path(__file__)), 'out_folder')
-
+    
 df = DuplicateFinder(args.path)
 df.run()
 print(df.stats())
