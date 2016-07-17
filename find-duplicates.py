@@ -151,7 +151,7 @@ class DuplicateFinder(object):
     
 out_path = os.path.join(dirname(os.path(__file__)), 'out_folder')
 
-# args.??? parser does not give a single option. Find out how to pass option given. 
+# args.??? iterate over args.__dict__ and return key that is true 
 df = DuplicateFinder(args.path, args.???, destination = out_path)
 df.run()
 print(df.stats())
