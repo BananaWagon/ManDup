@@ -5,19 +5,17 @@ import argparse
 
 from os.path import join, dirname, basename, getsize
 
-http://stackoverflow.com/questions/7427101/dead-simple-argparse-example-wanted-1-argument-3-results
-parser = argparse.ArgumentParser(description = "A tool for manipulating duplicate files.")
+#http://stackoverflow.com/questions/7427101/dead-simple-argparse-example-wanted-1-argument-3-results
 
-parser.add_argument('<path>', help = 'The path to search for duplicates. Will search sub-directories as well.', 
-                    required = True)
-parser.add_argument('-a' '--action', 
-                    help = 'This option is for an action to take on a the duplicate files. You can list, move, or delete duplicates. ', 
-                    choices = [('-l', '--list'), ('-m', '--move'), ('-d', '--delete')], 
-                    required = True, default = '-l')
+parser = argparse.ArgumentParser(description = "A tool for manipulating duplicate files. Searches for duplicate file names only.",
+                                usage = '%(prog)s <path> [option]')
 
-# Boiler plate maybe?
-drive = sys.argv[1]
-option = sys.argv[2]
+parser.add_argument('path', help = 'The path to search for duplicates. Will search sub-directories as well.')
+parser.add_argument('-l', '--list', action = 'store_true', help = 'List all the files that are duplicates. It will list by folder followed by duplicates in that folder.')
+parser.add_argument('-m', '--move', action = 'store_true', help = 'Move all duplicates to destination folder.')
+parser.add_argument('-d', '--delete', action = 'store_true', help = 'Delete all duplicates that are found. ')
+
+args = parser.parse_args()
 
 # TODO: Make a better way to implement an ignore list. 
 ignore = frozenset([ 'Cover.jpg', 'AlbumArtSmall.jpg', 'Folder.jpg',
@@ -25,19 +23,11 @@ ignore = frozenset([ 'Cover.jpg', 'AlbumArtSmall.jpg', 'Folder.jpg',
                 'desktop.ini',
                 'READ ME FIRST.txt', 'ReadMe.txt', 'readme.txt'])
 
-first_instance = set()
-file_list = []
-file_duplist = []
-dir_list = []
-dir_duplist = []
-total_size = 0
-not_moved = 0
-
 class DuplicateFinder(object):
     """Finds duplicate files in a folder or folders."""
     
-    def __init__(self, drive, option, destination = os.path.expanduser('F:\\moved')):
-        self.drive = drive
+    def __init__(self, path, option, destination = os.path.expanduser('F:\\moved')):
+        self.path = path
         self.destination = destination
         self.option = option
         self.file_index = []
@@ -50,8 +40,8 @@ class DuplicateFinder(object):
         self.total_size_moved = 0
         self.total_size_deleted= 0
         
-   def locate_files(self):     
-        for (dirname, dirs, files) in os.walk(drive):
+   def locate_files(self, path):     
+        for (dirname, dirs, files) in os.walk(self.path):
             for filename in files:
                 # Ignore files in this set
                 if filename not in ignore:
@@ -60,7 +50,7 @@ class DuplicateFinder(object):
                     yield join(dirname, filename)
                     
 """ Continue refactor here. """                    
-        
+    def add
         # List/Move/Delete file if file is a duplicate
         elif str(filename) in first_instance:
             if not filename in file_duplist:                    
