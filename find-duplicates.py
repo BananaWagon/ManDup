@@ -5,8 +5,6 @@ import argparse
 
 from os.path import join, dirname, basename, getsize
 
-#http://stackoverflow.com/questions/7427101/dead-simple-argparse-example-wanted-1-argument-3-results
-
 parser = argparse.ArgumentParser(description = "A tool for manipulating duplicate files. Searches for duplicate file names only.",
                                 usage = '%(prog)s <path> [option]')
 
@@ -21,29 +19,30 @@ args = parser.parse_args()
 ignore = frozenset([ 'Cover.jpg', 'AlbumArtSmall.jpg', 'Folder.jpg',
                 'Thumbs.db',
                 'desktop.ini',
-                'READ ME FIRST.txt', 'ReadMe.txt', 'readme.txt'])
+                'REAM ME FIRST.txt', 'READ ME FIRST.txt', 'ReadMe.txt', 'readme.txt',
+                '.BridgeSort', '.BridgeLabelsAndRatings'])
 
 class DuplicateFinder(object):
     """Finds duplicate files in a folder or folders."""
     
-    def __init__(self, path, option, destination = os.path.expanduser('F:\\moved')):
+    def __init__(self, path, destination = os.path.expanduser('F:\\moved')):
         self.path = path
         self.destination = destination
-        self.option = option
+        #self.option = option
         self.current_file = ''
         self.file_index = set()
         self.file_dup_index = []
         self.dir_dup_index =[]
         self.moved = 0
         self.not_moved = 0
-        self.deleded = 0
+        self.deleted = 0
         self.total_size_index = 0
         self.total_size_moved = 0
         self.total_size_dup = 0
         self.total_size_deleted= 0
         
         
-   def locate_files(self):
+    def locate_files(self):
         """Parses all files in path including sub directories."""
         
         for (dirname, dirs, files) in os.walk(self.path):
@@ -58,7 +57,7 @@ class DuplicateFinder(object):
     def add_to_dup_index(self):
         """Adds file names and directory names to a list."""
         
-        self.total_size_dup += getsize(basename(self.current_file))
+        self.total_size_dup += getsize(self.current_file)
         self.file_dup_index.append(basename(self.current_file))
         if dirname not in self.dir_dup_index:
             self.dir_dup_index.append(dirname(self.current_file))
@@ -69,18 +68,21 @@ class DuplicateFinder(object):
         """Moves all duplicate files in given path to destination"""
         
                 # TODO: Make option to choose destination.
-                #       Perserve the directory structure when moving. 
+                #       Preserve the directory structure when moving. 
                 #       Delete empty folders left behind.
         if args.move:
             try:
-                print("Moving: {0}".format(self.current_file), end=" ... ")
+                print("Moving: {0}".format(basename(self.current_file)), end=" ... ")
                 shutil.move(self.current_file, self.destination)
                 print("-=MOVED=-")
+                self.moved =+ 1
             except Exception as e:
-                print(e) # print error string to catch specific exceptions
+                if str(e) == 'Destination path \'' + join(self.destination, basename(self.current_file)) + '\' already exists':
+                    print("!!! File already exists !!!")
+                else:
+                    print(e)
                 self.not_moved += 1
-                # TODO: Validate file exists error
-                print("!!! File already exists !!!")
+                
         
     
     def delete_file(self):
@@ -88,10 +90,11 @@ class DuplicateFinder(object):
         
         if args.delete:
             try:
-                print("Deleting: {0}".format(basename(self.current_file, end=" ... ")))
+                print("Deleting: {0}".format(basename(self.current_file)), end=" ... ")
                 # TODO: os.remove does not reliably delete a file. Find out why.
                 os.remove(self.current_file)
                 print("-=DELETED=-")
+                self.deleted += 1
             except Exception as e:
                 print(e) # print error string to catch specific exeptions 
                          # do something for specific error
@@ -102,18 +105,16 @@ class DuplicateFinder(object):
         
         for self.current_file in self.locate_files():
             if basename(self.current_file) in self.file_index:
-                self.total_size += getsize(self.current_file)
+                self.total_size_index += getsize(self.current_file)
                 self.add_to_dup_index()
             
                 if args.list:
-                    print("    {0}".format(self.current_file))
+                    print("    {0}".format(basename(self.current_file)))
                 
                 elif args.move:
-                    self.moved =+ 1
                     self.move_file()
             
                 elif args.delete:
-                    self.deleted += 1
                     # sefl.total_size_deleted += getsize(self.current_file)
                     self.delete_file()
                 
@@ -128,12 +129,12 @@ class DuplicateFinder(object):
             ..........................................
             {len_seen_files} total files on drive.
             {len_dir_dup_index} directories have duplicates.
-            {len_file_duplist} duplicate files./tSize:  {total_size_indexed}
+            {len_file_dup_index} duplicate files.\tSize:  {len_total_size_dup}
             """.format(
             len_seen_files = len(self.file_index),
-            len_dir_duplist = len(self.dir_dup_index),
+            len_dir_dup_index = len(self.dir_dup_index),
             len_file_dup_index = len(self.file_dup_index),
-            len_total_size_dup = int(self.total_size_dup / 1000000000),
+            len_total_size_dup = int(self.total_size_dup / 100000000),
         )
         
         if args.move:
@@ -143,16 +144,14 @@ class DuplicateFinder(object):
             
         if args.delete:
             stats += """
-            {self.deleted} duplicate files deleted from:\t{self.path}
-            """.format(self=self)
+            {self.deleted} duplicate files deleted from:\t{self.path}""".format(self=self)
             
         return stats
         
     
-out_path = os.path.join(dirname(os.path(__file__)), 'out_folder')
+#out_path = os.path.join(dirname(os.path(__file__)), 'out_folder')
 
-# args.??? parser does not give a single option. Find out how to pass option given. 
-df = DuplicateFinder(args.path, args.???, destination = out_path)
+df = DuplicateFinder(args.path)
 df.run()
 print(df.stats())
 
