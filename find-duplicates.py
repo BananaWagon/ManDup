@@ -85,7 +85,6 @@ class DuplicateFinder(object):
                 self.not_moved += 1
                 
         
-    
     def delete_file(self):
         """Deletes all duplicate files"""
         
