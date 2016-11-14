@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import argparse
+from time import sleep
 
 from os.path import join, dirname, basename, getsize
 
@@ -20,7 +21,7 @@ ignore = frozenset([ 'Cover.jpg', 'AlbumArtSmall.jpg', 'Folder.jpg',
                 'Thumbs.db',
                 'desktop.ini',
                 'REAM ME FIRST.txt', 'READ ME FIRST.txt', 'ReadMe.txt', 'readme.txt',
-                '.BridgeSort', '.BridgeLabelsAndRatings'])
+                '.BridgeSort', '.BridgeLabelsAndRatings', '\u2016'])
 
 
 class DuplicateFinder(object):
@@ -42,7 +43,31 @@ class DuplicateFinder(object):
         self.total_size_dup = 0
         self.total_size_deleted= 0
         
+    
+    def run(self):
+        """List/Move/Delete files if file is a duplicate."""
         
+        for self.current_file in self.locate_files():
+            self.total_size_index += getsize(self.current_file)
+            if basename(self.current_file) in self.file_index:
+                self.add_to_dup_index()
+            
+                if args.list:
+                    print("{len_seen_files}\t{0}".format(basename(self.current_file), len_seen_files = len(self.file_dup_index)))
+                
+                elif args.move:
+                    self.move_file()
+                                
+                elif args.delete:
+                    # sefl.total_size_deleted += getsize(self.current_file)
+                    print(":Deleting:  {0}".format(basename(self.current_file)), end="\r")
+                    if self.delete_file():
+                        print("-=DELETED=-")                
+                                        
+            if basename(self.current_file) not in self.file_index:
+                self.file_index.add(basename(self.current_file))
+    
+    
     def locate_files(self):
         """Parses all files in path including sub directories."""
         
@@ -59,10 +84,10 @@ class DuplicateFinder(object):
         """Adds file names and directory names to a list."""
         
         self.total_size_dup += getsize(self.current_file)
-        self.file_dup_index.append(basename(self.current_file))
-        if dirname not in self.dir_dup_index:
+        self.file_dup_index.append(dirname(self.current_file))
+        if dirname(self.current_file) not in self.dir_dup_index:
             self.dir_dup_index.append(dirname(self.current_file))
-            print("\nFolder: {0}".format(dirname(self.current_file)))
+            print("\nFolder:  {0}".format(dirname(self.current_file)))
             
             
     def move_file(self):
@@ -72,69 +97,52 @@ class DuplicateFinder(object):
                 #       Preserve the directory structure when moving. 
                 #       Delete empty folders left behind.
         if args.move:
+            print(":Moving:  {0}".format(basename(self.current_file)), end="\r")
             try:
-                print("Moving: {0}".format(basename(self.current_file)), end=" ... ")
                 shutil.move(self.current_file, self.destination)
-                print("-=MOVED=-")
-                self.moved =+ 1
+                self.moved += 1
             except Exception as e:
                 if str(e) == 'Destination path \'' + join(self.destination, basename(self.current_file)) + '\' already exists':
                     print("!!! File already exists !!!")
                 else:
                     print(e)
                 self.not_moved += 1
-                
+            print("-=MOVED=-")
+        
         
     def delete_file(self):
         """Deletes all duplicate files"""
         
         if args.delete:
             try:
-                print("Deleting: {0}".format(basename(self.current_file)), end=" ... ")
                 # TODO: os.remove does not reliably delete a file. Find out why.
-                os.remove(self.current_file)
-                print("-=DELETED=-")
-                self.deleted += 1
+                
+                while os.path.isfile(self.current_file):
+                    os.remove(self.current_file)
+                    #Loop till removed
+                self.deleted =+ 1
             except Exception as e:
                 print(e) # print error string to catch specific exeptions 
-                         # do something for specific error
+                return False
+        return True
     
-    
-    def run(self):
-        """List/Move/Delete files if file is a duplicate."""
-        
-        for self.current_file in self.locate_files():
-            if basename(self.current_file) in self.file_index:
-                self.total_size_index += getsize(self.current_file)
-                self.add_to_dup_index()
             
-                if args.list:
-                    print("    {0}".format(basename(self.current_file)))
-                
-                elif args.move:
-                    self.move_file()
-            
-                elif args.delete:
-                    # sefl.total_size_deleted += getsize(self.current_file)
-                    self.delete_file()
-                
-            if basename(self.current_file) not in self.file_index:
-                self.file_index.add(basename(self.current_file))
-
-                
     def stats(self):
         """Formats program metrics and prints to screen."""
         
         stats = """
             ..........................................
-            {len_seen_files} total files on drive.
+            {len_seen_files} original files on drive.
             {len_dir_dup_index} directories have duplicates.
-            {len_file_dup_index} duplicate files.\tSize:  {len_total_size_dup}
+            {len_file_dup_index} duplicate files.\tSize:  {len_total_size_dup} MB
+            {total_files} total files on drive.\tSize:  {len_total_size} MB
             """.format(
             len_seen_files = len(self.file_index),
             len_dir_dup_index = len(self.dir_dup_index),
             len_file_dup_index = len(self.file_dup_index),
-            len_total_size_dup = int(self.total_size_dup / 100000000),
+            len_total_size_dup = int(self.total_size_dup / 1000000),
+            total_files = len(self.file_index) + len(self.file_dup_index),
+            len_total_size = int(self.total_size_index / 1000000),
         )
         
         if args.move:
