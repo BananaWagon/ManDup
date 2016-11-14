@@ -120,7 +120,7 @@ class DuplicateFinder(object):
                 while os.path.isfile(self.current_file):
                     os.remove(self.current_file)
                     #Loop till removed
-                self.deleted =+ 1
+                self.deleted += 1
             except Exception as e:
                 print(e) # print error string to catch specific exeptions 
                 return False
