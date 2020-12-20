@@ -82,7 +82,11 @@ class DuplicateFinder(object):
             
     def add_to_dup_index(self):
         """Adds file names and directory names to a list."""
-        
+                
+                # TODO: Emplement a way to check the "bitness" 
+                #       of a file and separete "name duplicates" from 
+                #       "bit duplicates". Some files are named the same
+                #       but are not true duplicates and visa versa. 
         self.total_size_dup += getsize(self.current_file)
         self.file_dup_index.append(dirname(self.current_file))
         if dirname(self.current_file) not in self.dir_dup_index:
